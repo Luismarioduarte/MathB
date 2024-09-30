@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final del Torneo Matemático Categoría B</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px;
+            background-color: #fff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+        }
+        h1, h2 {
+            color: #0d6efd;
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        h2 {
+            font-size: 1.5em;
+            margin-bottom: 30px;
+        }
+        .img-presentacion {
+            width: 40%; /* Reducción del 40% */
+            border-radius: 15px;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+        .img-presentacion:hover {
+            transform: scale(1.05);
+        }
+        .input-group {
+            margin-top: 20px;
+        }
+        .input-group label {
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+        .input-group input {
+            font-size: 1em;
+            padding: 10px;
+            width: 100%;
+            max-width: 350px;
+            margin-top: 10px;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            transition: border-color 0.3s;
+        }
+        .input-group input:focus {
+            border-color: #0d6efd;
+        }
+        .btn {
+            background-color: #0d6efd;
+            color: #fff;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1em;
+            margin-top: 20px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+        .btn:hover {
+            background-color: #0b5ed7;
+        }
+        #cronometro {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #ff5733;
+            margin-top: 20px;
+        }
+        .message {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #28a745;
+        }
+        .intentos, .fallos {
+            font-size: 1.1em;
+            color: #555;
+            margin-top: 10px;
+        }
+        .img-fase {
+            width: 100%; /* Disminución del 20% */
+            height: auto;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+        .img-fase:hover {
+            transform: scale(1.05);
+        }
+        @media (max-width: 768px) {
+            .img-presentacion {
+                width: 60%; /* Ajuste para pantallas pequeñas */
+            }
+            .img-fase {
+                width: 100%; /* Ajuste para pantallas pequeñas */
+            }
+            .container {
+                padding: 20px;
+            }
+        }
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.8em;
+            }
+            .img-presentacion {
+                width: 70%; /* Ajuste adicional en móviles */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Final del Torneo Matemático Categoría B</h1>
+        <h2>Colegio Cristiano Fuente de Vida</h2>
+
+        <!-- Imagen de presentación -->
+        <img id="presentacion-imagen" class="img-presentacion" src="presentacion.jpg" alt="Presentación del Torneo">
+
+        <!-- Ingreso del nombre del equipo -->
+        <div class="input-group">
+            <label for="equipo">Nombre del equipo:</label><br>
+            <input type="text" id="equipo" placeholder="Ingresa el nombre del equipo">
+        </div>
+        <button class="btn" onclick="iniciarTorneo()">Comenzar Torneo</button>
+
+        <!-- Imagen de la fase del problema -->
+        <div id="fase-container" style="display: none;">
+            <img id="fase-imagen" class="img-fase" src="p1.jpg" alt="Imagen Fase">
+            <div class="input-group">
+                <label for="respuesta">Ingresa la respuesta correcta:</label><br>
+                <input type="text" id="respuesta" placeholder="Tu respuesta">
+            </div>
+            <button class="btn" onclick="verificarRespuesta()">Verificar</button>
+
+            <!-- Cronómetro -->
+            <div id="cronometro">Tiempo: 00:00</div>
+
+            <!-- Mensajes y contadores -->
+            <div id="message" class="message"></div>
+            <div id="intentos" class="intentos">Intentos: 0</div>
+            <div id="fallos" class="fallos">Fallos: 0</div>
+        </div>
+    </div>
+
+    <script>
+        const imagenes = ["p1.jpg", "p2.jpg", "p3.jpg", "p4.jpg", "p5.jpg", "p6.jpg", "p7.jpg", "p8.jpg", "p9.jpg", "p10.jpg"];
+        const numerosCorrectos = [15, 124, 20, 3.7, 42, 40, 48, 32, 2400, 338.4];
+        let faseActual = 0;
+        let intentos = 0;
+        let fallos = 0;
+        let intervalo;
+        let segundos = 0;
+        let minutos = 0;
+        let nombreEquipo = '';
+
+        function mostrarFase() {
+            // Cambia la imagen
+            const imgElement = document.getElementById('fase-imagen');
+            imgElement.src = imagenes[faseActual];
+
+            // Limpia el mensaje y la respuesta
+            document.getElementById('respuesta').value = '';
+            document.getElementById('message').innerText = '';
+            document.getElementById('intentos').innerText = 'Intentos: 0';
+            intentos = 0;
+        }
+
+        function verificarRespuesta() {
+            const respuestaUsuario = parseFloat(document.getElementById('respuesta').value);
+            intentos++;
+            document.getElementById('intentos').innerText = `Intentos: ${intentos}`;
+
+            if (isNaN(respuestaUsuario)) {
+                document.getElementById('message').innerText = 'Por favor, ingresa un número válido.';
+                return;
+            }
+
+            if (respuestaUsuario === numerosCorrectos[faseActual]) {
+                if (faseActual < imagenes.length - 1) {
+                    faseActual++;
+                    mostrarFase();
+                } else {
+                    document.getElementById('message').innerText = `¡Felicidades, ${nombreEquipo}! Has completado todas las fases correctamente y eres el ganador.`;
+                    clearInterval(intervalo); // Detiene el cronómetro
+                    document.getElementById('message').innerHTML += '<br><small>This test was made by Luis Duarte</small>';
+                    document.querySelector('.btn').disabled = true;
+                }
+            } else {
+                document.getElementById('message').innerText = 'Número incorrecto, inténtalo de nuevo.';
+                fallos++;
+                document.getElementById('fallos').innerText = `Fallos: ${fallos}`;
+            }
+        }
+
+        function iniciarCronometro() {
+            intervalo = setInterval(() => {
+                segundos++;
+                if (segundos === 60) {
+                    minutos++;
+                    segundos = 0;
+                }
+                const minutosStr = minutos < 10 ? `0${minutos}` : minutos;
+                const segundosStr = segundos < 10 ? `0${segundos}` : segundos;
+                document.getElementById('cronometro').innerText = `Tiempo: ${minutosStr}:${segundosStr}`;
+            }, 1000);
+        }
+
+        function iniciarTorneo() {
+            nombreEquipo = document.getElementById('equipo').value;
+            if (nombreEquipo === '') {
+                alert('Por favor, ingresa el nombre del equipo antes de comenzar.');
+                return;
+            }
+
+            // Oculta la imagen de presentación y muestra las fases del torneo
+            document.getElementById('presentacion-imagen').style.display = 'none';
+            document.querySelector('.input-group').style.display = 'none';
+            document.querySelector('.btn').style.display = 'none';
+            document.getElementById('fase-container').style.display = 'block';
+            mostrarFase();
+            iniciarCronometro();
+
+            // Agregar evento para permitir avanzar con Enter en la respuesta
+            const respuestaInput = document.getElementById('respuesta');
+            respuestaInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    verificarRespuesta();
+                }
+            });
+
+            // Agregar evento para permitir avanzar con Enter en el nombre del equipo
+            const equipoInput = document.getElementById('equipo');
+            equipoInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    iniciarTorneo();
+                }
+            });
+        }
+    </script>
+</body>
+</html>
